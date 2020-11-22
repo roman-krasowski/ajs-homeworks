@@ -1,166 +1,109 @@
-# Домашнее задание к лекции «Рабочее окружение»
+# Домашнее задание к лекции «Модули»
 
 **Важно**: каждая задача выполняется в виде отдельного проекта с собственным GitHub репозиторием.
 
-В личном кабинете на сайте [netology.ru](http://netology.ru/) в поле комментария к домашней работе вставьте ссылки на ваш GitHub-проекты.
+**Важно**: на данные задачи требование отсутствия ошибок в ESLint не распространяется (но вы можете его запустить и изучить ошибки, которые вам будут показаны).
+
+**Важно**: решения должны быть построены на базе [шаблона Webpack](/ci-template) (для задач под номерами 1 и 2).
+
+В личном кабинете на сайте [netology.ru](http://netology.ru/) в поле комментария к домашней работе вставьте ссылки на ваши GitHub-проекты.
 
 ---
 
-## npm package
+## Webpack
 
 ### Легенда
 
-Итак, вы решили организовать разработку игры с использованием правильных инструментов, а именно что проект нужно создавать с помощью `npm`, управлять зависимостями и сборкой тоже с его помощью. 
+Ваш проект разросся и необходимо его разделить на модули. Модули помогают обеспечить изолированность кода и внести порядок в проект. Но для работы с модулями необходимо настроить загрузчик модулей (удостоверьтесь с помощью сервиса [caniuse.com](http://caniuse.com/) что модули поддерживаются не везде).
 
 ### Описание
 
-Создайте проект на GitHub-проект, после чего с помощью `npm init` сгенерируйте package:
-1. package name - defender-game
-1. version - 1.0.0
-1. description - "Browser based game"
-1. entry point - index.js
-1. test command - оставьте пустым
-1. git repository - URL вашего GitHub репозитория 
-1. keywords - game
-1. author - ваше имя или псевдоним
-1. license - ISC
+Используйте следующую структуру, чтобы настроить экспорт в бандл:
+- каталог `src`:
+  - каталог `css`
+    - файл `style.css` (в качестве содержимого используйте `body { color: #999; }`)
+  - каталог `js`
+    - файл `app.js` (в качестве содержимого используйте `console.log('app worked')`)
+  - файл `index.html` (шаблон для HTMLWebpackPlugin) (содержимое файла - произвольно, скрипты и стили должны подключаться автоматически, за счёт использования HTMLWebpackPlugin и MiniCssExtractPlugin)
+  - файл `index.js` (Webpack entry point)
+- файл `webpack.config.js`
+- файл `package.json`
+- другие файлы
 
-Добавьте `.gitignore` из набора github: [https://github.com/github/gitignore/blob/master/Node.gitignore](https://github.com/github/gitignore/blob/master/Node.gitignore).
+Убедитесь, что после экспорта, бандл запускается и работает (создайте для этого скрипт в npm, который запускает HTTP-сервер для каталога `dist`). HTTP-сервер выберите сами.
 
 ---
 
-## Babel
+## Import/Export
 
 ### Легенда
 
-Как вы уже видели, некоторые проекты требуют для своей работы совместимости с текущей поддерживаемой версией языка. Но при этом есть большое желание использовать новейшие возможности ES. И для этого есть специальный инструмент, который позволяет осуществлять компиляцию кода на ES6+ в поддерживаемые на данный момент возможности - [Babel](https://babeljs.io). Поэтому вы приняли следующее решение: писать всё на новейшей версии языка и с помощью Babel обеспечить себе наибольшее количество пользователей.
+Вы успешно настроили загрузку модулей с Webpack и сборку приложения. Пришло время всё грамотно разделить на модули!
 
 ### Описание
 
-Ваша задача подключить Babel к проекту и настроить сборку с его использованием.
+Разделите всё приложение на модули:
+1. Модуль Domain - где будет храниться логика предметной области (персонажи, атаки и т.д.)
+3. Модуль Game - отвечающий за работу приложения (загрузку и сохранение)
+4. Модуль App - отвечающий за запуск приложения
 
-1. Установите Babel (`npm install --save-dev @babel/core @babel/cli @babel/preset-env`).
-2. Установите CoreJS (`npm install core-js@3`).
+Заглушки для модулей:
 
-2. Настройте скрипт запуска `build` для сборки с помощью `npm`. Для этого в секции `scripts` файла `package.json` пропишите:
-```json
-{
-    ...
-    "scripts": {
-        ...
-        "build": "babel src -d dist"
-        ...
-    }
+файл `domain.js`:
+```javascript
+class Character {
 }
 ```
 
-3. Создайте конфиг `.babelrc` и пропишите `@babel/preset-env`:
+файл `game.js`
 ```javascript
-{
-  "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "useBuiltIns": "usage",
-        "corejs": 3
-      }
-    ]
-  ]
+class Game {
+  start() {
+    console.log('game started');
+  }
+}
+
+class GameSavingData {
+}
+
+function readGameSaving() {
+}
+
+function writeGameSaving() {
 }
 ```
 
-4. Создайте файл `src/app.js` со следующим содержимым:
+файл `app.js`
 ```javascript
-const characters = [
-  {name: 'мечник', health: 10},
-  {name: 'маг', health: 100},
-  {name: 'маг', health: 0},
-  {name: 'лучник', health: 0},
-];
-
-const alive = characters.filter(item => item.health > 0);
+const game = new Game();
+game.start();
 ```
 
-5. Удостоверьтесь, что проект собирается, если в консоли запустить команду `npm run build`, и в каталоге `dist` формируется преобразованный Babel код.
+Организуйте:
+1. Из модуля `domain` экспорт класса `Character` в качестве `default`'ного
+1. В модуле `game` импорт класса `Character`
+1. Экспорт из модуля `game` класса `Game` в качестве дефолтного, класса `GameSavingData` и функций `readGameSaving` и `writeGameSaving`
+1. В модуле `app.js` одним импортом импортируйте `Game`, `GameSavingData` и функции `readGameSaving`, `writeGameSaving` (их при импорте переименуйте в `loadGame` и `saveGame` соответственно)
 
-6. Добавьте каталог `dist` в `.gitignore`.
+С самими функциями и классами ничего делать не нужно, нужно только правильно расставить инструкции `import`/`export`.
 
 ---
 
-## ESLint (задача со звёздочкой)
+## ESM (задача со звёздочкой)
 
 **Важно**: данная задача не является обязательной 
 
 ### Легенда
 
-Очень важно следить за качеством кода в вашем проекте и следовать единым принципам кодирования в команде. В этом нам поможет ещё один инструмент - ESLint.
+В качестве внутреннего эксперимента вы решили попробовать нативную поддержку модулей в браузерах (без Webpack).
 
 ### Описание
 
-Ваша задача «прикрутить» ESLint к проекту и настроить работу с его использованием.
+Преобразуйте предыдущую задачу так, чтобы использовалась нативная поддержка модулей ES в браузерах.
 
-Установка:
-```shell
-npm install --save-dev eslint
-npx eslint --init
-```
+Для этого инициализируйте проект на базе `npm`, подключите туда live-server (ESLint, Babel и Webpack не подключайте).
 
+Подключите все модули на базовую страниу `index.html`, так, чтобы при открытии этой страницы в браузере в консоли отобразилось `game started`.
 
-При инициализации конфиг-файла выберите те же опции, что указаны в лекции:
-* How would you like to use ESLint? *To check syntax, find problems, and enforce code style*
-* What type of modules does your project use? *JavaScript modules (import/export)*
-* Which framework does your project use? *None of this*
-* Where does your code run? *Browser*
-* How would you like to define a style for your project? *Use a popular style guide*
-* Which style guide do you want to follow? *Airbnb*
-* What format do you want your config file to be in? *JSON*
-* Would you like to install them now with npm? *Y*
-
-Настройте скрипт запуска `lint` для `npm`. Для этого в секции `scripts` файла `package.json` пропишите:
-```json
-{
-    ...
-    "scripts": {
-        ...
-        "lint": "eslint ."
-        ...
-    }
-}
-```
-
-Создайте файл `src/app.js` со следующим содержимым:
-```javascript
-const characters = [
-  {name: 'мечник', health: 10},
-  {name: 'маг', health: 100},
-  {name: 'маг', health: 0},
-  {name: 'лучник', health: 0}
-];
-
-const alive = characters.filter(item => item.health > 0);
-```
-
-Содержимое `.eslintignore`:
-```
-dist
-```
-
-Содержимое `.eslintrc.json`:
-```json
-{
-    "extends": "airbnb-base",
-    "env": {
-        "es6": true,
-        "browser": true
-    },
-    "rules": {
-        "no-restricted-syntax": [
-            "error",
-            "LabeledStatement",
-            "WithStatement"
-        ]
-   }
-}
-```
-
-Запустите ESLint и удостоверьтесь, что вам показываются ошибки стиля. Исправьте их, затем снова запустите ESLint и удостоверьтесь, что исправлены все ошибки проверки стиля.
+---
+В личном кабинете на сайте [netology.ru](http://netology.ru/) в поле комментария к домашней работе вставьте ссылки на ваши GitHub-проекты.
