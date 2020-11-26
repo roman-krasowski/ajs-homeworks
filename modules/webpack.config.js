@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-    mode:'development',
+    mode:'production',
     entry: './src/index.js',
     devServer: {
         contentBase: "./dist"
@@ -21,7 +21,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'development'
+            title: 'production'
         }),
          new MiniCssExtractPlugin({
              filename: '[name].css'
